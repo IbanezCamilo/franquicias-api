@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: franquicias-api
+  data:
+    mongodb:
+      # En local apunta a la instancia de docker-compose; en la nube se inyecta MONGODB_URI.
+      uri: ${MONGODB_URI:mongodb://localhost:27017/franquicias}
+      # Crea los indices declarados en los documentos al arrancar (incluido el unico de nombre).
+      auto-index-creation: true
+
+server:
+  # Render inyecta el puerto por la variable PORT.
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Solo health e info quedan expuestos; el resto permanece cerrado.
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    com.franquicias.api: INFO
