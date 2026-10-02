@@ -46,6 +46,7 @@ terraform/.terraform/
 # cualquiera obtenga el mismo plan.
 *.tfstate
 *.tfstate.*
+*.tfplan
 *.tfvars
 !*.tfvars.example
 crash.log
