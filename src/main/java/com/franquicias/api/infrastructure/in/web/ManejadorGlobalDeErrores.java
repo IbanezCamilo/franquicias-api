@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebInputException;
 
 import java.net.URI;
@@ -77,6 +78,24 @@ public class ManejadorGlobalDeErrores {
         return problema(HttpStatus.BAD_REQUEST, "Peticion invalida",
                 "El cuerpo o los parametros de la peticion no tienen el formato esperado",
                 TIPO_PETICION_INVALIDA);
+    }
+
+    /**
+     * Errores que ya traen un estado HTTP decidido por el framework, sobre todo el 404
+     * de una ruta no mapeada. Sin este handler los absorberia el de {@link Exception} y
+     * cualquier URL inexistente respondria 500.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    ProblemDetail estadoYaDecidido(ResponseStatusException excepcion) {
+        HttpStatus estado = HttpStatus.valueOf(excepcion.getStatusCode().value());
+        if (estado == HttpStatus.NOT_FOUND) {
+            return problema(estado, "Recurso no encontrado",
+                    "La ruta solicitada no existe en esta API", TIPO_NO_ENCONTRADO);
+        }
+        String detalle = excepcion.getReason() == null
+                ? estado.getReasonPhrase()
+                : excepcion.getReason();
+        return problema(estado, estado.getReasonPhrase(), detalle, TIPO_PETICION_INVALIDA);
     }
 
     @ExceptionHandler(Exception.class)
