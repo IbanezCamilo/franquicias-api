@@ -7,6 +7,9 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017/franquicias}
       # Crea los indices declarados en los documentos al arrancar (incluido el unico de nombre).
       auto-index-creation: true
+      # Representacion estandar de UUID, para que los identificadores sean legibles
+      # por cualquier otro cliente y no queden atados al formato legado de Java.
+      uuid-representation: standard
 
 server:
   # Render inyecta el puerto por la variable PORT.
