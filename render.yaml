@@ -1,0 +1,25 @@
+# Blueprint de Render: describe el servicio de forma declarativa, de modo que el
+# despliegue sea reproducible y no una secuencia de clics en un panel.
+#
+# Render construye la imagen con el Dockerfile del repositorio y redespliega en
+# cada push a main.
+#
+# MONGODB_URI no se declara aqui con valor: lleva credenciales. Se marca
+# sync:false para que Render la pida al crear el servicio y la guarde cifrada.
+
+services:
+  - type: web
+    name: franquicias-api
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+
+    # Render reinicia el servicio si este endpoint deja de responder.
+    healthCheckPath: /actuator/health
+
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      # Render inyecta PORT automaticamente; la aplicacion ya lo lee de ahi.

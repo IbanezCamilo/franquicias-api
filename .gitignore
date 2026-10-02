@@ -42,7 +42,8 @@ PRUEBA DESARROLLADOR BACKEND ACCENTURE.pdf
 
 ### Terraform ###
 terraform/.terraform/
-terraform/.terraform.lock.hcl
+# El lock de proveedores SI se versiona: fija las versiones exactas para que
+# cualquiera obtenga el mismo plan.
 *.tfstate
 *.tfstate.*
 *.tfvars
