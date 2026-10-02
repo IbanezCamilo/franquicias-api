@@ -1,0 +1,348 @@
+{
+  "info": {
+    "name": "API de Franquicias",
+    "description": "Coleccion completa de la prueba tecnica. Las peticiones estan encadenadas: cada una guarda en variables de coleccion los identificadores que la siguiente necesita, asi que se puede ejecutar de arriba abajo (o con el Collection Runner) sin copiar y pegar nada.\n\nVariable `baseUrl`: por defecto apunta a http://localhost:8080. Cambiala por la URL publica para probar contra el despliegue en la nube.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "franquiciaId", "value": "" },
+    { "key": "sucursalNorteId", "value": "" },
+    { "key": "sucursalSurId", "value": "" },
+    { "key": "productoTeId", "value": "" },
+    { "key": "productoCafeId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Crear franquicia",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('franquiciaId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Cafes del Valle\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/v1/franquicias", "host": ["{{baseUrl}}"], "path": ["api", "v1", "franquicias"] }
+      }
+    },
+    {
+      "name": "2. Agregar sucursal norte",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('sucursalNorteId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sucursal Norte\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales"]
+        }
+      }
+    },
+    {
+      "name": "3. Agregar sucursal sur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('sucursalSurId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sucursal Sur\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales"]
+        }
+      }
+    },
+    {
+      "name": "4. Agregar producto (cafe, stock 10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('productoCafeId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Cafe Molido\",\n  \"stock\": 10\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/productos",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "productos"]
+        }
+      }
+    },
+    {
+      "name": "5. Agregar producto (te, stock 80)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('productoTeId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Te Verde\",\n  \"stock\": 80\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/productos",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "productos"]
+        }
+      }
+    },
+    {
+      "name": "6. Agregar producto en la sucursal sur (azucar, stock 30)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));"]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Azucar\",\n  \"stock\": 30\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalSurId}}/productos",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalSurId}}", "productos"]
+        }
+      }
+    },
+    {
+      "name": "7. CRITERIO 7 - Producto con mayor stock por sucursal",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const cuerpo = pm.response.json();",
+              "pm.test('devuelve un producto por sucursal con catalogo', () => pm.expect(cuerpo).to.have.lengthOf(2));",
+              "pm.test('cada fila indica su sucursal', () => cuerpo.forEach(f => pm.expect(f).to.have.property('sucursalNombre')));",
+              "pm.test('destaca el de mayor stock', () => pm.expect(cuerpo[0].producto.nombre).to.eql('Te Verde'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/productos-top-stock",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "productos-top-stock"]
+        }
+      }
+    },
+    {
+      "name": "8. Modificar stock del cafe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('el stock se actualizo', () => pm.expect(pm.response.json().stock).to.eql(250));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"stock\": 250\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/productos/{{productoCafeId}}/stock",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "productos", "{{productoCafeId}}", "stock"]
+        }
+      }
+    },
+    {
+      "name": "9. EXTRA - Renombrar franquicia",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Cafes del Rio\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/nombre",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "nombre"]
+        }
+      }
+    },
+    {
+      "name": "10. EXTRA - Renombrar sucursal",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sucursal Centro\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/nombre",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "nombre"]
+        }
+      }
+    },
+    {
+      "name": "11. EXTRA - Renombrar producto",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Te Negro\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/productos/{{productoTeId}}/nombre",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "productos", "{{productoTeId}}", "nombre"]
+        }
+      }
+    },
+    {
+      "name": "12. Eliminar producto",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "type": "text/javascript", "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalNorteId}}/productos/{{productoTeId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalNorteId}}", "productos", "{{productoTeId}}"]
+        }
+      }
+    },
+    {
+      "name": "ERROR 409 - Franquicia con nombre duplicado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+              "pm.test('responde problem+json', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('problem+json'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"  cafes del rio  \"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/v1/franquicias", "host": ["{{baseUrl}}"], "path": ["api", "v1", "franquicias"] }
+      }
+    },
+    {
+      "name": "ERROR 400 - Stock negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('detalla el campo invalido', () => pm.expect(pm.response.json().errors).to.have.property('stock'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto Invalido\",\n  \"stock\": -5\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/{{franquiciaId}}/sucursales/{{sucursalSurId}}/productos",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "{{franquiciaId}}", "sucursales", "{{sucursalSurId}}", "productos"]
+        }
+      }
+    },
+    {
+      "name": "ERROR 404 - Franquicia inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "type": "text/javascript", "exec": ["pm.test('404 Not Found', () => pm.response.to.have.status(404));"] }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/franquicias/11111111-1111-1111-1111-111111111111/sucursales/productos-top-stock",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "franquicias", "11111111-1111-1111-1111-111111111111", "sucursales", "productos-top-stock"]
+        }
+      }
+    }
+  ]
+}
