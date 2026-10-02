@@ -1,11 +1,19 @@
 spring:
   application:
     name: franquicias-api
+
+  mongodb:
+    # En local apunta a la instancia de docker-compose; en la nube se inyecta MONGODB_URI.
+    uri: ${MONGODB_URI:mongodb://localhost:27017/franquicias}
+    representation:
+      # Representacion estandar de UUID. Sin esto el driver se niega a codificar los
+      # identificadores, porque el formato legado de Java es ambiguo entre lenguajes.
+      uuid: standard
+
   data:
     mongodb:
-      # En local apunta a la instancia de docker-compose; en la nube se inyecta MONGODB_URI.
-      uri: ${MONGODB_URI:mongodb://localhost:27017/franquicias}
-      # Crea los indices declarados en los documentos al arrancar (incluido el unico de nombre).
+      # Crea los indices declarados en los documentos al arrancar, incluido el unico
+      # sobre el nombre normalizado de la franquicia.
       auto-index-creation: true
 
 server:

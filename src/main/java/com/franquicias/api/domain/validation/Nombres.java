@@ -41,10 +41,16 @@ public final class Nombres {
      * espacios en los extremos: "Sucursal Norte" y "sucursal norte " son el mismo nombre.
      */
     public static boolean sonEquivalentes(String uno, String otro) {
-        return clave(uno).equals(clave(otro));
+        return claveDeComparacion(uno).equals(claveDeComparacion(otro));
     }
 
-    private static String clave(String valor) {
+    /**
+     * Forma canonica de un nombre para comparar e indexar: recortada y en minusculas.
+     * El adaptador de persistencia la guarda junto al nombre original para poder
+     * imponer la unicidad con un indice unico, que de otro modo seria sensible a
+     * mayusculas.
+     */
+    public static String claveDeComparacion(String valor) {
         return valor == null ? "" : valor.strip().toLowerCase(Locale.ROOT);
     }
 }
