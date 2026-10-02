@@ -1,0 +1,26 @@
+# Artefactos de build: la imagen los genera dentro, no se copian desde el host.
+target/
+!target/*.jar
+
+# Control de versiones y metadatos
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Secretos y estado local
+.env
+*.tfstate
+*.tfstate.*
+terraform/.terraform/
+
+# Entornos de desarrollo
+.idea/
+.vscode/
+*.iml
+
+# Documentacion y utilidades que no afectan al binario
+docs/
+postman/
+README.md
+*.pdf

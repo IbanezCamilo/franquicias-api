@@ -169,6 +169,26 @@ class FranquiciasEndToEndIT {
                 .expectStatus().isNotFound();
     }
 
+    @Test
+    @DisplayName("una ruta que no existe devuelve 404, no 500")
+    void rutaDesconocidaDevuelve404() {
+        // El manejador generico de Exception absorbia el ResponseStatusException del
+        // framework y convertia cualquier URL inexistente en un 500.
+        cliente.get().uri("/api/v1/ruta-que-no-existe")
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.title").isEqualTo("Recurso no encontrado");
+    }
+
+    @Test
+    @DisplayName("los endpoints de actuator no expuestos devuelven 404")
+    void actuatorNoExpuestoDevuelve404() {
+        cliente.get().uri("/actuator/env").exchange().expectStatus().isNotFound();
+        cliente.get().uri("/actuator/beans").exchange().expectStatus().isNotFound();
+        cliente.get().uri("/actuator/health").exchange().expectStatus().isOk();
+    }
+
     private String crearFranquicia(String nombre) {
         return extraerId(cliente.post().uri(RUTA)
                 .contentType(MediaType.APPLICATION_JSON)

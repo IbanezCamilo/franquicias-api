@@ -1,0 +1,43 @@
+# Entorno local completo: API y MongoDB. Permite evaluar el proyecto con un solo
+# comando, sin credenciales de MongoDB Atlas ni ninguna cuenta en la nube.
+#
+#   docker compose up --build
+#
+# Swagger UI queda en http://localhost:8080/swagger-ui.html
+
+services:
+
+  mongo:
+    image: mongo:8.0
+    container_name: franquicias-mongo
+    restart: unless-stopped
+    ports:
+      # Se publica para poder inspeccionar la base con mongosh o Compass.
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+    container_name: franquicias-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Dentro de la red de compose, el host de Mongo es el nombre del servicio.
+      MONGODB_URI: mongodb://mongo:27017/franquicias
+    depends_on:
+      mongo:
+        # La API no arranca hasta que Mongo responde al ping, para que el primer
+        # arranque no falle por una carrera.
+        condition: service_healthy
+
+volumes:
+  mongo-data:
