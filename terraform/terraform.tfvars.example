@@ -1,0 +1,22 @@
+# Copia este archivo como terraform.tfvars y rellena los valores.
+# terraform.tfvars esta en .gitignore: nunca se versiona.
+#
+# Las claves de la API de Atlas se crean en:
+#   Atlas > Organization > Access Manager > API Keys
+# El rol minimo necesario es "Organization Project Creator".
+#
+# Alternativa recomendada para no escribir secretos en disco: exportarlos como
+# variables de entorno con el prefijo TF_VAR_, por ejemplo
+#   export TF_VAR_atlas_private_key="..."
+
+atlas_public_key  = "xxxxxxxx"
+atlas_private_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+atlas_org_id      = "xxxxxxxxxxxxxxxxxxxxxxxx"
+
+password_bd = "cambia-esto-por-algo-largo-y-aleatorio"
+
+# Opcionales: tienen valores por defecto razonables.
+# nombre_proyecto   = "franquicias-api"
+# nombre_cluster    = "franquicias-cluster"
+# nombre_base_datos = "franquicias"
+# region            = "US_EAST_1"
