@@ -88,6 +88,8 @@ Base: `/api/v1`
 
 | Metodo | Ruta | Que hace | Exito | Errores |
 |---|---|---|---|---|
+| `GET` | `/franquicias` | Lista las franquicias, con el recuento de su contenido | 200 | |
+| `GET` | `/franquicias/{fid}` | Consulta una franquicia con su arbol completo | 200 | 400, 404 |
 | `POST` | `/franquicias` | Agrega una franquicia | 201 | 400, 409 |
 | `POST` | `/franquicias/{fid}/sucursales` | Agrega una sucursal | 201 | 400, 404, 409 |
 | `POST` | `/franquicias/{fid}/sucursales/{sid}/productos` | Agrega un producto | 201 | 400, 404, 409 |
@@ -97,6 +99,16 @@ Base: `/api/v1`
 | `PATCH` | `/franquicias/{fid}/nombre` | Renombra la franquicia | 200 | 400, 404, 409 |
 | `PATCH` | `/franquicias/{fid}/sucursales/{sid}/nombre` | Renombra la sucursal | 200 | 400, 404, 409 |
 | `PATCH` | `/franquicias/{fid}/sucursales/{sid}/productos/{pid}/nombre` | Renombra el producto | 200 | 400, 404, 409 |
+
+> **Sobre los dos `GET`:** el enunciado no pedia endpoints de lectura. Se anadieron porque
+> sin ellos la API es de solo escritura: si se pierde el identificador devuelto al crear,
+> los datos quedan inalcanzables y no hay forma de explorar ni verificar el estado.
+>
+> El listado devuelve un **resumen** (nombre y recuentos), no el arbol completo, para que la
+> respuesta no crezca con todo el catalogo de todas las franquicias. Conviene ser preciso con
+> lo que eso logra: **recorta la respuesta, no la lectura**. El adaptador sigue trayendo los
+> documentos enteros de MongoDB; reducir tambien la lectura exigiria una proyeccion. Tampoco
+> hay paginacion, que es lo primero que haria falta con un volumen real.
 
 ### El reporte de mayor stock
 
@@ -292,19 +304,19 @@ Copia `.env.example` como `.env` o exportalas directamente.
 ## Pruebas
 
 ```bash
-./mvnw test      # 113 tests unitarios, sin Docker, segundos
-./mvnw verify    # + 6 tests de integracion con Testcontainers (requiere Docker)
+./mvnw test      # 123 tests unitarios, sin Docker, segundos
+./mvnw verify    # + 9 tests de integracion con Testcontainers (requiere Docker)
 ```
 
 | Nivel | Cuantos | Que cubre |
 |---|---|---|
 | Dominio | 54 | Reglas de negocio e invariantes, sin Spring |
 | Configuracion | 6 | Validacion de la cadena de conexion al arrancar |
-| Casos de uso | 27 | Orquestacion con `StepVerifier` y un repositorio en memoria |
-| Slice web | 26 | `@WebFluxTest` + `WebTestClient`: codigos de estado, validacion y serializacion |
-| Integracion | 6 | MongoDB real con Testcontainers, recorrido completo de punta a punta |
+| Casos de uso | 32 | Orquestacion con `StepVerifier` y un repositorio en memoria |
+| Slice web | 31 | `@WebFluxTest` + `WebTestClient`: codigos de estado, validacion y serializacion |
+| Integracion | 9 | MongoDB real con Testcontainers, recorrido completo de punta a punta |
 
-**119 en total.** La piramide es deliberada: las reglas se prueban donde son baratas de
+**132 en total.** La piramide es deliberada: las reglas se prueban donde son baratas de
 probar, y la base de datos solo donde aporta informacion que un doble no puede dar.
 
 ### Coleccion de peticiones

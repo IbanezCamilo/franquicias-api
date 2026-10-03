@@ -47,6 +47,34 @@ public final class Respuestas {
         }
     }
 
+    /**
+     * Vista reducida para el listado. No incluye el arbol: una respuesta con todas las
+     * franquicias y todos sus productos crece sin limite. El cliente usa este resumen
+     * para decidir a cual entrar y pide el detalle de una sola.
+     *
+     * <p>Ojo con la lectura facil: esto recorta la respuesta, no la consulta. El
+     * adaptador sigue trayendo los documentos completos de MongoDB. Reducir tambien la
+     * lectura exigiria una proyeccion y paginacion.
+     */
+    @Schema(name = "ResumenFranquicia",
+            description = "Franquicia con el recuento de su contenido, sin el detalle")
+    public record ResumenFranquiciaResponse(
+            UUID id,
+            String nombre,
+            int sucursales,
+            int productos) {
+
+        public static ResumenFranquiciaResponse desde(Franquicia franquicia) {
+            return new ResumenFranquiciaResponse(
+                    franquicia.id(),
+                    franquicia.nombre(),
+                    franquicia.sucursales().size(),
+                    franquicia.sucursales().stream()
+                            .mapToInt(sucursal -> sucursal.productos().size())
+                            .sum());
+        }
+    }
+
     @Schema(name = "ProductoDestacado",
             description = "Producto con mayor stock de una sucursal, con la sucursal a la que pertenece")
     public record ProductoDestacadoResponse(

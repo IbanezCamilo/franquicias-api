@@ -1,5 +1,7 @@
 package com.franquicias.api.infrastructure.in.web;
 
+import com.franquicias.api.application.usecase.ConsultarFranquicia;
+import com.franquicias.api.application.usecase.ConsultarFranquicias;
 import com.franquicias.api.application.usecase.ConsultarProductosDestacados;
 import com.franquicias.api.application.usecase.CrearFranquicia;
 import com.franquicias.api.application.usecase.RenombrarFranquicia;
@@ -43,6 +45,12 @@ class FranquiciaControllerTest {
 
     @MockitoBean
     private ConsultarProductosDestacados consultarProductosDestacados;
+
+    @MockitoBean
+    private ConsultarFranquicias consultarFranquicias;
+
+    @MockitoBean
+    private ConsultarFranquicia consultarFranquicia;
 
     @Test
     @DisplayName("POST devuelve 201 con la franquicia creada")
@@ -191,5 +199,83 @@ class FranquiciaControllerTest {
         cliente.get().uri(RUTA + "/" + franquiciaId + "/sucursales/productos-top-stock")
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+
+    @Test
+    @DisplayName("GET devuelve el listado resumido con los recuentos de contenido")
+    void listaLasFranquicias() {
+        Sucursal norte = Sucursal.crear("Sucursal Norte");
+        Franquicia conContenido = Franquicia.crear("Cafes del Valle")
+                .agregarSucursal(norte)
+                .agregarProducto(norte.id(), Producto.crear("Cafe", 10))
+                .agregarProducto(norte.id(), Producto.crear("Te", 80));
+        when(consultarFranquicias.ejecutar())
+                .thenReturn(Flux.just(conContenido, Franquicia.crear("Zara")));
+
+        cliente.get().uri(RUTA)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].nombre").isEqualTo("Cafes del Valle")
+                .jsonPath("$[0].sucursales").isEqualTo(1)
+                .jsonPath("$[0].productos").isEqualTo(2)
+                .jsonPath("$[1].nombre").isEqualTo("Zara")
+                .jsonPath("$[1].sucursales").isEqualTo(0)
+                .jsonPath("$[1].productos").isEqualTo(0)
+                // El resumen no debe filtrar el arbol: ese es su motivo de existir.
+                .jsonPath("$[0].sucursales[0]").doesNotExist();
+    }
+
+    @Test
+    @DisplayName("GET devuelve una lista vacia si no hay franquicias, no un 404")
+    void listaVacia() {
+        when(consultarFranquicias.ejecutar()).thenReturn(Flux.empty());
+
+        cliente.get().uri(RUTA)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("GET por identificador devuelve la franquicia con su arbol completo")
+    void consultaUnaFranquicia() {
+        Sucursal norte = Sucursal.crear("Sucursal Norte");
+        Franquicia existente = Franquicia.crear("Cafes del Valle")
+                .agregarSucursal(norte)
+                .agregarProducto(norte.id(), Producto.crear("Cafe", 10));
+        when(consultarFranquicia.ejecutar(existente.id())).thenReturn(Mono.just(existente));
+
+        cliente.get().uri(RUTA + "/" + existente.id())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(existente.id().toString())
+                .jsonPath("$.sucursales.length()").isEqualTo(1)
+                .jsonPath("$.sucursales[0].productos[0].nombre").isEqualTo("Cafe");
+    }
+
+    @Test
+    @DisplayName("GET por identificador devuelve 404 si la franquicia no existe")
+    void consultarInexistenteDevuelve404() {
+        UUID id = UUID.randomUUID();
+        when(consultarFranquicia.ejecutar(id))
+                .thenReturn(Mono.error(RecursoNoEncontradoException.franquicia(id)));
+
+        cliente.get().uri(RUTA + "/" + id)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.title").isEqualTo("Recurso no encontrado");
+    }
+
+    @Test
+    @DisplayName("GET por identificador devuelve 400 si no es un UUID")
+    void consultarConIdentificadorInvalidoDevuelve400() {
+        cliente.get().uri(RUTA + "/no-es-un-uuid")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }
