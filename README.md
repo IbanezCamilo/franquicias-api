@@ -7,7 +7,44 @@ cada una. Prueba tecnica de desarrollador backend.
 
 ---
 
-## Arranque rapido
+## Demo en vivo
+
+La API esta desplegada y accesible sin instalar nada:
+
+| Recurso | URL |
+|---|---|
+| **Swagger UI** | https://franquicias-api-hgh1.onrender.com/swagger-ui.html |
+| OpenAPI JSON | https://franquicias-api-hgh1.onrender.com/v3/api-docs |
+| Health check | https://franquicias-api-hgh1.onrender.com/actuator/health |
+
+> **Primera llamada lenta:** el plan gratuito de Render duerme el servicio tras 15
+> minutos sin trafico. Si el primer request tarda cerca de un minuto, es el arranque en
+> frio; a partir de ahi responde con normalidad. Si parece colgado, no lo esta.
+
+Prueba rapida desde la terminal:
+
+```bash
+API=https://franquicias-api-hgh1.onrender.com
+
+# 1. Crear una franquicia (devuelve su id)
+curl -X POST $API/api/v1/franquicias   -H 'Content-Type: application/json'   -d '{"nombre":"Mi Franquicia"}'
+
+# 2. Con ese id, agregar una sucursal
+curl -X POST $API/api/v1/franquicias/<FRANQUICIA_ID>/sucursales   -H 'Content-Type: application/json'   -d '{"nombre":"Sucursal Norte"}'
+
+# 3. Agregar productos y consultar el reporte de mayor stock
+curl $API/api/v1/franquicias/<FRANQUICIA_ID>/sucursales/productos-top-stock
+```
+
+O, mas comodo, la coleccion completa de un tiron:
+
+```bash
+npx newman run postman/franquicias-api.postman_collection.json   --env-var baseUrl=https://franquicias-api-hgh1.onrender.com
+```
+
+---
+
+## Arranque rapido en local
 
 Lo unico que hace falta es Docker:
 
@@ -255,18 +292,19 @@ Copia `.env.example` como `.env` o exportalas directamente.
 ## Pruebas
 
 ```bash
-./mvnw test      # 107 tests unitarios, sin Docker, segundos
+./mvnw test      # 113 tests unitarios, sin Docker, segundos
 ./mvnw verify    # + 6 tests de integracion con Testcontainers (requiere Docker)
 ```
 
 | Nivel | Cuantos | Que cubre |
 |---|---|---|
 | Dominio | 54 | Reglas de negocio e invariantes, sin Spring |
+| Configuracion | 6 | Validacion de la cadena de conexion al arrancar |
 | Casos de uso | 27 | Orquestacion con `StepVerifier` y un repositorio en memoria |
 | Slice web | 26 | `@WebFluxTest` + `WebTestClient`: codigos de estado, validacion y serializacion |
 | Integracion | 6 | MongoDB real con Testcontainers, recorrido completo de punta a punta |
 
-**113 en total.** La piramide es deliberada: las reglas se prueban donde son baratas de
+**119 en total.** La piramide es deliberada: las reglas se prueban donde son baratas de
 probar, y la base de datos solo donde aporta informacion que un doble no puede dar.
 
 ### Coleccion de peticiones

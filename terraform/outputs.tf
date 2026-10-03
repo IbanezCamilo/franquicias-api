@@ -14,11 +14,15 @@ output "cadena_conexion_estandar" {
 }
 
 output "mongodb_uri" {
-  description = "MONGODB_URI completa, lista para configurar en Render. Marcada como sensible porque incluye el password"
+  description = "MONGODB_URI completa, lista para configurar en Render. Incluye credenciales, base de datos y opciones de escritura. Marcada como sensible"
   sensitive   = true
-  value = replace(
-    mongodbatlas_advanced_cluster.franquicias.connection_strings.standard_srv,
-    "mongodb+srv://",
-    "mongodb+srv://${var.usuario_bd}:${urlencode(var.password_bd)}@"
+  value = format(
+    "%s/%s?retryWrites=true&w=majority",
+    replace(
+      mongodbatlas_advanced_cluster.franquicias.connection_strings.standard_srv,
+      "mongodb+srv://",
+      "mongodb+srv://${var.usuario_bd}:${urlencode(var.password_bd)}@"
+    ),
+    var.nombre_base_datos
   )
 }

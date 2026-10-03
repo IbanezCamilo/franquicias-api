@@ -1,0 +1,4 @@
+# El listener se registra aqui, y no como @Component, para que se ejecute antes de
+# que el contexto cree ningun bean: en ese momento todavia no hay contenedor.
+org.springframework.context.ApplicationListener=\
+  com.franquicias.api.config.ValidacionDeConexionMongo
