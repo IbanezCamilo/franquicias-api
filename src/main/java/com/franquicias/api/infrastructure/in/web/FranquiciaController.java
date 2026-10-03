@@ -1,11 +1,14 @@
 package com.franquicias.api.infrastructure.in.web;
 
+import com.franquicias.api.application.usecase.ConsultarFranquicia;
+import com.franquicias.api.application.usecase.ConsultarFranquicias;
 import com.franquicias.api.application.usecase.ConsultarProductosDestacados;
 import com.franquicias.api.application.usecase.CrearFranquicia;
 import com.franquicias.api.application.usecase.RenombrarFranquicia;
 import com.franquicias.api.infrastructure.in.web.dto.Peticiones;
 import com.franquicias.api.infrastructure.in.web.dto.Respuestas.FranquiciaResponse;
 import com.franquicias.api.infrastructure.in.web.dto.Respuestas.ProductoDestacadoResponse;
+import com.franquicias.api.infrastructure.in.web.dto.Respuestas.ResumenFranquiciaResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,19 +31,46 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/franquicias")
-@Tag(name = "Franquicias", description = "Alta, renombrado y reporte de mayor stock")
+@Tag(name = "Franquicias", description = "Alta, consulta, renombrado y reporte de mayor stock")
 public class FranquiciaController {
 
     private final CrearFranquicia crearFranquicia;
     private final RenombrarFranquicia renombrarFranquicia;
     private final ConsultarProductosDestacados consultarProductosDestacados;
+    private final ConsultarFranquicias consultarFranquicias;
+    private final ConsultarFranquicia consultarFranquicia;
 
     public FranquiciaController(CrearFranquicia crearFranquicia,
                                 RenombrarFranquicia renombrarFranquicia,
-                                ConsultarProductosDestacados consultarProductosDestacados) {
+                                ConsultarProductosDestacados consultarProductosDestacados,
+                                ConsultarFranquicias consultarFranquicias,
+                                ConsultarFranquicia consultarFranquicia) {
         this.crearFranquicia = crearFranquicia;
         this.renombrarFranquicia = renombrarFranquicia;
         this.consultarProductosDestacados = consultarProductosDestacados;
+        this.consultarFranquicias = consultarFranquicias;
+        this.consultarFranquicia = consultarFranquicia;
+    }
+
+    @GetMapping
+    @Operation(summary = "Lista todas las franquicias",
+            description = "Devuelve un resumen por franquicia, ordenado por nombre ignorando "
+                    + "mayusculas. No incluye el detalle de sucursales y productos: para eso "
+                    + "esta la consulta por identificador.")
+    @ApiResponse(responseCode = "200", description = "Listado, vacio si no hay ninguna")
+    public Flux<ResumenFranquiciaResponse> listar() {
+        return consultarFranquicias.ejecutar().map(ResumenFranquiciaResponse::desde);
+    }
+
+    @GetMapping("/{franquiciaId}")
+    @Operation(summary = "Consulta una franquicia con todas sus sucursales y productos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Franquicia encontrada"),
+            @ApiResponse(responseCode = "400", description = "El identificador no es un UUID", content = @Content),
+            @ApiResponse(responseCode = "404", description = "La franquicia no existe", content = @Content)
+    })
+    public Mono<FranquiciaResponse> consultar(@PathVariable UUID franquiciaId) {
+        return consultarFranquicia.ejecutar(franquiciaId).map(FranquiciaResponse::desde);
     }
 
     @PostMapping

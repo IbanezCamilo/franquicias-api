@@ -1,10 +1,12 @@
 package com.franquicias.api.domain.port.out;
 
+import java.util.UUID;
+
 import com.franquicias.api.domain.exception.RecursoNoEncontradoException;
 import com.franquicias.api.domain.model.Franquicia;
-import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Puerto de salida hacia el almacen de franquicias. El dominio declara que necesita
@@ -15,6 +17,13 @@ import java.util.UUID;
  * no entra aqui nada de Spring ni de MongoDB.
  */
 public interface FranquiciaRepositoryPort {
+
+    /**
+     * Todas las franquicias, ordenadas alfabeticamente por nombre ignorando
+     * mayusculas y espacios. El orden forma parte del contrato: hay dos
+     * implementaciones y los tests comparan contra una secuencia concreta.
+     */
+    Flux<Franquicia> listarTodas();
 
     /** Recupera el agregado completo, o vacio si no existe. */
     Mono<Franquicia> buscarPorId(UUID id);

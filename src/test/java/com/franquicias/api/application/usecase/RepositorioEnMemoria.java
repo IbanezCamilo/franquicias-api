@@ -1,13 +1,16 @@
 package com.franquicias.api.application.usecase;
 
-import com.franquicias.api.domain.model.Franquicia;
-import com.franquicias.api.domain.port.out.FranquiciaRepositoryPort;
-import com.franquicias.api.domain.validation.Nombres;
-import reactor.core.publisher.Mono;
-
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import com.franquicias.api.domain.model.Franquicia;
+import com.franquicias.api.domain.port.out.FranquiciaRepositoryPort;
+import com.franquicias.api.domain.validation.Nombres;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Implementacion en memoria del puerto, para probar los casos de uso sin Mongo ni
@@ -17,11 +20,18 @@ import java.util.UUID;
 class RepositorioEnMemoria implements FranquiciaRepositoryPort {
 
     private final Map<UUID, Franquicia> almacen = new LinkedHashMap<>();
-
+    
     /** Inserta directamente, sin pasar por los casos de uso, para preparar escenarios. */
     Franquicia precargar(Franquicia franquicia) {
         almacen.put(franquicia.id(), franquicia);
         return franquicia;
+    }
+
+    @Override
+    public Flux<Franquicia> listarTodas() {
+        // Imita el orden del adaptador real, que ordena por nombreNormalizado en Mongo.
+        return Flux.fromIterable(almacen.values())
+                .sort(Comparator.comparing(f -> Nombres.claveDeComparacion(f.nombre())));
     }
 
     Franquicia estadoDe(UUID id) {

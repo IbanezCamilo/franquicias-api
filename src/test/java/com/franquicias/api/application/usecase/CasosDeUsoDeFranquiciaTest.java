@@ -1,19 +1,20 @@
 package com.franquicias.api.application.usecase;
 
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import com.franquicias.api.domain.exception.NombreDuplicadoException;
 import com.franquicias.api.domain.exception.RecursoNoEncontradoException;
 import com.franquicias.api.domain.exception.ReglaDeNegocioException;
 import com.franquicias.api.domain.model.Franquicia;
 import com.franquicias.api.domain.model.Sucursal;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+
 import reactor.test.StepVerifier;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Casos de uso de franquicia")
 class CasosDeUsoDeFranquiciaTest {
@@ -129,6 +130,75 @@ class CasosDeUsoDeFranquiciaTest {
             StepVerifier.create(caso.ejecutar(UUID.randomUUID(), "Cafes del Rio"))
                     .expectError(RecursoNoEncontradoException.class)
                     .verify();
+        }
+    }
+    @Nested
+    @DisplayName("ConsultarFranquicia")
+    class ConsultarDetalle {
+
+        @Test
+        @DisplayName("devuelve la franquicia completa con sus sucursales")
+        void devuelveLaFranquicia() {
+            Sucursal norte = Sucursal.crear("Sucursal Norte");
+            Franquicia existente = repositorio.precargar(
+                    Franquicia.crear("Cafes del Valle").agregarSucursal(norte));
+            ConsultarFranquicia caso = new ConsultarFranquicia(repositorio);
+
+            StepVerifier.create(caso.ejecutar(existente.id()))
+                    .assertNext(franquicia -> {
+                        assertThat(franquicia.id()).isEqualTo(existente.id());
+                        assertThat(franquicia.nombre()).isEqualTo("Cafes del Valle");
+                        assertThat(franquicia.sucursales()).hasSize(1);
+                    })
+                    .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("falla si la franquicia no existe, en vez de completar vacio")
+        void fallaSiNoExiste() {
+            ConsultarFranquicia caso = new ConsultarFranquicia(repositorio);
+
+            StepVerifier.create(caso.ejecutar(UUID.randomUUID()))
+                    .expectError(RecursoNoEncontradoException.class)
+                    .verify();
+        }
+    }
+
+    @Nested
+    @DisplayName("ConsultarFranquicias")
+    class ConsultarListado {
+
+        @Test
+        @DisplayName("completa vacio si todavia no hay ninguna franquicia")
+        void listadoVacio() {
+            ConsultarFranquicias caso = new ConsultarFranquicias(repositorio);
+
+            StepVerifier.create(caso.ejecutar()).verifyComplete();
+        }
+
+        @Test
+        @DisplayName("devuelve todas las franquicias almacenadas")
+        void devuelveTodas() {
+            repositorio.precargar(Franquicia.crear("Cafes del Valle"));
+            repositorio.precargar(Franquicia.crear("Cafes del Rio"));
+            ConsultarFranquicias caso = new ConsultarFranquicias(repositorio);
+
+            StepVerifier.create(caso.ejecutar())
+                    .expectNextCount(2)
+                    .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("ordena por nombre ignorando mayusculas, no por codigo de caracter")
+        void ordenaIgnorandoMayusculas() {
+            repositorio.precargar(Franquicia.crear("Zara"));
+            repositorio.precargar(Franquicia.crear("aldi"));
+            repositorio.precargar(Franquicia.crear("Carrefour"));
+            ConsultarFranquicias caso = new ConsultarFranquicias(repositorio);
+
+            StepVerifier.create(caso.ejecutar().map(Franquicia::nombre))
+                    .expectNext("aldi", "Carrefour", "Zara")
+                    .verifyComplete();
         }
     }
 }

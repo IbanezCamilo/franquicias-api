@@ -162,6 +162,54 @@ class FranquiciasEndToEndIT {
     }
 
     @Test
+    @DisplayName("el listado ordena por nombre ignorando mayusculas, usando el indice de Mongo")
+    void listadoOrdenadoContraLaBaseReal() {
+        // Se insertan desordenadas y con distinta caja. Si el adaptador ordenase por
+        // "nombre" en vez de por "nombreNormalizado", Zara iria antes que aldi.
+        crearFranquicia("Zara");
+        crearFranquicia("aldi");
+        String carrefour = crearFranquicia("Carrefour");
+        String norte = crearSucursal(carrefour, "Sucursal Norte");
+        crearProducto(carrefour, norte, "Cafe Molido", 10);
+
+        cliente.get().uri(RUTA)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(3)
+                .jsonPath("$[0].nombre").isEqualTo("aldi")
+                .jsonPath("$[1].nombre").isEqualTo("Carrefour")
+                .jsonPath("$[2].nombre").isEqualTo("Zara")
+                .jsonPath("$[1].sucursales").isEqualTo(1)
+                .jsonPath("$[1].productos").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("el detalle devuelve el arbol completo persistido")
+    void detalleContraLaBaseReal() {
+        String franquiciaId = crearFranquicia("Cafes del Valle");
+        String norte = crearSucursal(franquiciaId, "Sucursal Norte");
+        crearProducto(franquiciaId, norte, "Cafe Molido", 42);
+
+        cliente.get().uri(RUTA + "/" + franquiciaId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(franquiciaId)
+                .jsonPath("$.sucursales.length()").isEqualTo(1)
+                .jsonPath("$.sucursales[0].nombre").isEqualTo("Sucursal Norte")
+                .jsonPath("$.sucursales[0].productos[0].stock").isEqualTo(42);
+    }
+
+    @Test
+    @DisplayName("el detalle de una franquicia inexistente devuelve 404")
+    void detalleInexistenteDevuelve404() {
+        cliente.get().uri(RUTA + "/" + UUID.randomUUID())
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     @DisplayName("una franquicia inexistente devuelve 404 contra la base real")
     void franquiciaInexistenteDevuelve404() {
         cliente.get().uri(RUTA + "/" + UUID.randomUUID() + "/sucursales/productos-top-stock")

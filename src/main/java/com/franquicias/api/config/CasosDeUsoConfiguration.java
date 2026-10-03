@@ -1,8 +1,13 @@
 package com.franquicias.api.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.franquicias.api.application.usecase.ActualizarStock;
 import com.franquicias.api.application.usecase.AgregarProducto;
 import com.franquicias.api.application.usecase.AgregarSucursal;
+import com.franquicias.api.application.usecase.ConsultarFranquicia;
+import com.franquicias.api.application.usecase.ConsultarFranquicias;
 import com.franquicias.api.application.usecase.ConsultarProductosDestacados;
 import com.franquicias.api.application.usecase.CrearFranquicia;
 import com.franquicias.api.application.usecase.EliminarProducto;
@@ -10,8 +15,6 @@ import com.franquicias.api.application.usecase.RenombrarFranquicia;
 import com.franquicias.api.application.usecase.RenombrarProducto;
 import com.franquicias.api.application.usecase.RenombrarSucursal;
 import com.franquicias.api.domain.port.out.FranquiciaRepositoryPort;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Cableado de los casos de uso como beans.
@@ -22,7 +25,17 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration(proxyBeanMethods = false)
 public class CasosDeUsoConfiguration {
-
+    
+    @Bean
+    ConsultarFranquicias consultarFranquicias(FranquiciaRepositoryPort repositorio){
+        return new ConsultarFranquicias(repositorio);
+    }
+    
+    @Bean
+    ConsultarFranquicia consultarFranquicia(FranquiciaRepositoryPort repositorio){
+        return new ConsultarFranquicia(repositorio);
+    }
+    
     @Bean
     CrearFranquicia crearFranquicia(FranquiciaRepositoryPort repositorio) {
         return new CrearFranquicia(repositorio);

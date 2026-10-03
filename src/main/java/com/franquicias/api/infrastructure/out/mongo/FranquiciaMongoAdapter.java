@@ -4,9 +4,12 @@ import com.franquicias.api.domain.exception.NombreDuplicadoException;
 import com.franquicias.api.domain.model.Franquicia;
 import com.franquicias.api.domain.port.out.FranquiciaRepositoryPort;
 import com.franquicias.api.domain.validation.Nombres;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.
+DuplicateKeyException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -23,6 +26,12 @@ public class FranquiciaMongoAdapter implements FranquiciaRepositoryPort {
 
     public FranquiciaMongoAdapter(FranquiciaMongoRepository repositorio) {
         this.repositorio = repositorio;
+    }
+
+    @Override
+    public Flux<Franquicia> listarTodas() {
+        return repositorio.findAll(Sort.by(Sort.Direction.ASC, "nombreNormalizado"))
+                .map(FranquiciaDocument::aDominio);
     }
 
     @Override
